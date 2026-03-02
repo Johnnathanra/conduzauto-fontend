@@ -8,8 +8,6 @@ export const InstructorInvitesPage = () => {
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
 
@@ -39,9 +37,7 @@ export const InstructorInvitesPage = () => {
       const activeInvites = (data.invites || []).filter(invite => invite.isActive);
       setInvites(activeInvites);
     } catch (error) {
-      console.error('❌ [InstructorInvitesPage] Erro:', error);
-      setSuccessMessage('❌ Erro ao carregar convites');
-      setShowSuccessModal(true);
+      console.error('❌ [InstructorInvitesPage] Erro ao carregar convites:', error);
     } finally {
       setLoading(false);
     }
@@ -63,17 +59,13 @@ export const InstructorInvitesPage = () => {
       
       if (data.success) {
         console.log('✅ [InstructorInvitesPage] Convite gerado:', data);
-        setSuccessMessage(`✅ Convite gerado com sucesso!\n\n${data.inviteLink}`);
-        setShowSuccessModal(true);
+        // Recarregar convites automaticamente sem pop-up
         loadInvites();
       } else {
-        setSuccessMessage('❌ Erro ao gerar convite');
-        setShowSuccessModal(true);
+        console.error('❌ Erro ao gerar convite:', data.message);
       }
     } catch (error) {
-      console.error('❌ [InstructorInvitesPage] Erro:', error);
-      setSuccessMessage('❌ Erro ao conectar com o servidor');
-      setShowSuccessModal(true);
+      console.error('❌ [InstructorInvitesPage] Erro ao gerar convite:', error);
     } finally {
       setLoading(false);
     }
@@ -113,17 +105,13 @@ export const InstructorInvitesPage = () => {
       
       if (response.ok) {
         console.log('✅ [InstructorInvitesPage] Convite removido');
-        setSuccessMessage('✅ Convite removido com sucesso!');
-        setShowSuccessModal(true);
+        // Remover do estado sem pop-up
         setInvites(prevInvites => prevInvites.filter(invite => invite.code !== code));
       } else {
-        setSuccessMessage('❌ Erro ao remover convite');
-        setShowSuccessModal(true);
+        console.error('❌ Erro ao remover convite');
       }
     } catch (error) {
-      console.error('❌ [InstructorInvitesPage] Erro:', error);
-      setSuccessMessage('❌ Erro ao conectar com o servidor');
-      setShowSuccessModal(true);
+      console.error('❌ [InstructorInvitesPage] Erro ao remover convite:', error);
     }
   };
 
@@ -141,17 +129,13 @@ export const InstructorInvitesPage = () => {
       
       if (response.ok) {
         console.log('✅ [InstructorInvitesPage] Todos os convites foram removidos');
-        setSuccessMessage('✅ Todos os convites foram removidos!');
-        setShowSuccessModal(true);
+        // Limpar lista sem pop-up
         setInvites([]);
       } else {
-        setSuccessMessage('❌ Erro ao limpar convites');
-        setShowSuccessModal(true);
+        console.error('❌ Erro ao limpar convites');
       }
     } catch (error) {
       console.error('❌ [InstructorInvitesPage] Erro ao limpar:', error);
-      setSuccessMessage('❌ Erro ao conectar com o servidor');
-      setShowSuccessModal(true);
     } finally {
       setLoading(false);
     }
@@ -174,7 +158,6 @@ export const InstructorInvitesPage = () => {
   // Classes reutilizáveis
   const modalBackdrop = `fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50`;
   const modalContent = `${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl max-w-md w-full p-6 shadow-2xl`;
-  const primaryButton = `bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all`;
   const secondaryButton = `${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} font-bold py-2 px-4 rounded-lg transition-all`;
 
   return (
@@ -311,7 +294,7 @@ export const InstructorInvitesPage = () => {
         </div>
       </div>
 
-      {/* Confirm Modal */}
+      {/* Confirm Modal (MANTIDO) */}
       {showConfirmModal && (
         <div className={modalBackdrop} onClick={() => setShowConfirmModal(false)}>
           <div className={modalContent} onClick={(e) => e.stopPropagation()}>
@@ -343,29 +326,6 @@ export const InstructorInvitesPage = () => {
                 ✅ Limpar
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className={modalBackdrop} onClick={() => setShowSuccessModal(false)}>
-          <div className={modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <Check className="w-6 h-6 text-orange-600" />
-              <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Notificação
-              </h3>
-            </div>
-            <p className={`mb-6 whitespace-pre-line ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              {successMessage}
-            </p>
-            <button
-              onClick={() => setShowSuccessModal(false)}
-              className={`w-full ${primaryButton}`}
-            >
-              ✅ OK
-            </button>
           </div>
         </div>
       )}
