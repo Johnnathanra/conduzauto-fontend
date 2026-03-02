@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { Check, AlertCircle, Loader } from 'lucide-react';
 
-export const InvitLandingPage = () => {
+const InviteLandingPage = () => {
   const { isDark } = useTheme();
   const { slug, code } = useParams();
   const navigate = useNavigate();
@@ -14,23 +14,23 @@ export const InvitLandingPage = () => {
   const validateInvite = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/invites/validate/${slug}/${code}`
-      );
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      console.log('🔍 [InviteLandingPage] Validando convite:', { slug, code, apiUrl });
 
+      const response = await fetch(`${apiUrl}/invites/validate/${slug}/${code}`);
       const data = await response.json();
 
+      console.log('✅ [InviteLandingPage] Resposta da validação:', data);
+
       if (response.ok && data.valid) {
-        console.log('✅ Convite válido:', data);
         setInvite(data);
         setError(null);
       } else {
-        console.error('❌ Erro ao validar convite:', data.message);
-        setError(data.message || 'Convite inválido');
+        setError(data.message || 'Convite inválido ou expirado');
         setInvite(null);
       }
     } catch (err) {
-      console.error('❌ Erro ao conectar:', err);
+      console.error('❌ [InviteLandingPage] Erro:', err);
       setError('Erro ao validar convite. Tente novamente mais tarde.');
       setInvite(null);
     } finally {
@@ -43,102 +43,90 @@ export const InvitLandingPage = () => {
   }, [validateInvite]);
 
   const handleJoinInstructor = () => {
-    sessionStorage.setItem('inviteData', JSON.stringify({
-      slug,
-      code,
-      instructorId: invite.instructorId,
-      instructorName: invite.instructorName,
-      instructorEmail: invite.instructorEmail
-    }));
-
-    navigate('/student/register', { 
-      state: { 
-        inviteSlug: slug, 
-        inviteCode: code,
-        instructorName: invite.instructorName
-      } 
-    });
+    if (invite) {
+      const inviteData = {
+        slug,
+        code,
+        instructorId: invite.instructorId,
+        instructorName: invite.instructorName,
+        instructorEmail: invite.instructorEmail,
+      };
+      sessionStorage.setItem('inviteData', JSON.stringify(inviteData));
+      console.log('💾 [InviteLandingPage] Dados do convite salvos:', inviteData);
+      navigate('/signup', { state: { inviteSlug: slug, inviteCode: code, instructorName: invite.instructorName } });
+    }
   };
 
+  if (loading) {
+    return (
+      <div className={`flex items-center justify-center min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-orange-600 mx-auto mb-4" />
+          <p className={`mt-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Validando convite...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`flex items-center justify-center min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
+        <div className="text-center max-w-md p-8">
+          <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <h1 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Convite Inválido</h1>
+          <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{error}</p>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-all"
+          >
+            ← Voltar para Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center p-4`}>
-      <div className={`rounded-lg shadow-2xl max-w-md w-full p-8 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-        
-        {loading && (
-          <div className="text-center">
-            <Loader className="w-12 h-12 text-orange-600 animate-spin mx-auto mb-4" />
-            <p className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Validando convite...
-            </p>
-            <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Por favor, aguarde
-            </p>
-          </div>
-        )}
+    <div className={`flex items-center justify-center min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-white to-gray-50'}`}>
+      <div className={`max-w-md w-full mx-4 p-8 rounded-xl shadow-xl border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className="text-center mb-6">
+          <Check className="w-16 h-16 text-orange-600 mx-auto mb-4" />
+          <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Convite Válido! 🎉</h1>
+          <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Você foi convidado para estudar com um instrutor</p>
+        </div>
 
-        {error && !loading && (
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Convite Inválido
-            </h2>
-            <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              {error}
-            </p>
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
-            >
-              Voltar para Home
-            </button>
-          </div>
-        )}
+        {invite && (
+          <div className={`mb-6 p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-orange-50'} border ${isDark ? 'border-gray-600' : 'border-orange-200'}`}>
+            <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>👨‍🏫 Instrutor</p>
+            <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{invite.instructorName}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{invite.instructorEmail}</p>
 
-        {invite && !loading && (
-          <div className="text-center">
-            <div className="bg-green-100 dark:bg-green-900 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8 text-green-600 dark:text-green-300" />
-            </div>
-            
-            <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Convite Válido! 🎉
-            </h2>
-            
-            <p className={`text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Você foi convidado para se juntar ao instrutor
-            </p>
+            <hr className={`my-4 ${isDark ? 'border-gray-600' : 'border-orange-200'}`} />
 
-            <div className={`rounded-lg p-4 mb-6 ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
-              <p className={`text-xs font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Instrutor
-              </p>
-              <h3 className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                {invite.instructorName}
-              </h3>
-              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                {invite.instructorEmail}
-              </p>
-            </div>
-
-            <p className={`text-xs mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              ⏰ Convite válido até: {new Date(invite.expiresAt).toLocaleDateString('pt-BR')}
-            </p>
-
-            <button
-              onClick={handleJoinInstructor}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-all text-lg"
-            >
-              Prosseguir para Registro
-            </button>
-
-            <p className={`text-xs mt-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Você será redirecionado para criar sua conta como aluno
+            <p className={`text-xs font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>📅 Expira em</p>
+            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+              {new Date(invite.expiresAt).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
         )}
+
+        <button
+          onClick={handleJoinInstructor}
+          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all mb-3 flex items-center justify-center gap-2"
+        >
+          <Check className="w-5 h-5" />
+          Prosseguir para Registro
+        </button>
+
+        <button
+          onClick={() => navigate('/')}
+          className={`w-full ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} font-bold py-2 px-6 rounded-lg transition-all`}
+        >
+          ← Voltar para Home
+        </button>
       </div>
     </div>
   );
 };
 
-export default InvitLandingPage;
+export default InviteLandingPage;
