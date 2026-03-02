@@ -195,11 +195,11 @@ export const InstructorInvitesPage = () => {
 
         {/* Header com Botões Sticky */}
         <div className={`sticky top-0 z-20 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b`}>
-          <div className="max-w-7xl mx-auto px-4 py-4 flex gap-4">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row gap-4">
             <button
               onClick={generateInvite}
               disabled={loading}
-              className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap"
+              className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all whitespace-nowrap"
             >
               <Plus className="w-5 h-5" />
               {loading ? 'Gerando...' : 'Gerar Novo Convite'}
@@ -209,7 +209,7 @@ export const InstructorInvitesPage = () => {
               <button
                 onClick={handleClearAll}
                 disabled={loading}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all whitespace-nowrap"
+                className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all whitespace-nowrap"
               >
                 <Trash2 className="w-5 h-5" />
                 Limpar Todos
@@ -221,7 +221,7 @@ export const InstructorInvitesPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Dica fixa */}
           <div className={`${isDark ? 'bg-orange-600' : 'bg-orange-600'} rounded-lg p-4 mb-8 sticky top-16 z-10`}>
-            <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-white'}`}>
+            <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-white' : 'text-white'}`}>
               💡 <strong>Dica:</strong> Copie o link e compartilhe com seus alunos. Quando clicarem, serão vinculados automaticamente à sua conta.
             </p>
           </div>
@@ -233,11 +233,11 @@ export const InstructorInvitesPage = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
               {invites.map((invite, index) => (
                 <div
                   key={invite.code}
-                  className={`${isDark ? 'bg-gray-800 border-gray-700 hover:border-orange-600' : 'bg-white border-gray-200 hover:border-orange-600'} border rounded-lg p-6 transition-all hover:shadow-lg flex flex-col`}
+                  className={`${isDark ? 'bg-gray-800 border-gray-700 hover:border-orange-600' : 'bg-white border-gray-200 hover:border-orange-600'} border rounded-lg p-6 transition-all hover:shadow-lg flex flex-col h-full`}
                 >
                   {/* Header Card */}
                   <div className="mb-4">

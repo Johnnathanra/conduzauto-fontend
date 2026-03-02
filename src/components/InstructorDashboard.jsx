@@ -4,7 +4,6 @@ import { useInstructor } from '../contexts/InstructorContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Star, Eye, Edit, Trash2, Plus, X, LogOut, Users, BarChart3, TrendingUp, Gift } from 'lucide-react';
 import InstructorStudentsManager from './InstructorStudentsManager';
-import InvitationModal from './InvitationModal';
 
 export const InstructorDashboard = () => {
   const { isDark } = useTheme();
@@ -21,7 +20,6 @@ export const InstructorDashboard = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [editingEvaluation, setEditingEvaluation] = useState(null);
   const [showStudentsManager, setShowStudentsManager] = useState(false);
-  const [showInvitationModal, setShowInvitationModal] = useState(false);
 
   // Formulário de avaliação
   const [evaluationForm, setEvaluationForm] = useState({
@@ -299,7 +297,7 @@ export const InstructorDashboard = () => {
             Gerenciar Alunos
           </button>
           <button
-            onClick={() => setShowInvitationModal(true)}
+            onClick={() => navigate('/instructor/invites')}
             className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
             title="Gerar links de convite para alunos"
           >
@@ -694,11 +692,6 @@ export const InstructorDashboard = () => {
       {showStudentsManager && (
         <InstructorStudentsManager onClose={() => setShowStudentsManager(false)} />
       )}
-
-      <InvitationModal 
-        isOpen={showInvitationModal} 
-        onClose={() => setShowInvitationModal(false)} 
-      />
     </div>
   );
 };
