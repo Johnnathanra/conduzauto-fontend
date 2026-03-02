@@ -157,7 +157,7 @@ export const InstructorSettingsPage = () => {
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <InstructorSidebar />
 
-      <div className="md:ml-64 pt-20 md:pt-0">
+      <div className="md:ml-0 pt-20 md:pt-0">
 
         {/* Header */}
         <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b p-6`}>
