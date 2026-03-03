@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useInstructor } from '../contexts/InstructorContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Star, Eye, Edit, Trash2, Plus, X, LogOut, Users, BarChart3, TrendingUp, Gift } from 'lucide-react';
+import { Search, Star, Eye, Edit, Trash2, Plus, X, LogOut, Users, BarChart3, TrendingUp, Gift, AlertCircle, CheckCircle } from 'lucide-react';
 import InstructorStudentsManager from './InstructorStudentsManager';
 
 export const InstructorDashboard = () => {
@@ -22,6 +22,13 @@ export const InstructorDashboard = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [editingEvaluation, setEditingEvaluation] = useState(null);
   const [showStudentsManager, setShowStudentsManager] = useState(false);
+
+  // ✅ Estados para modais customizados
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [pendingDeleteEvaluationId, setPendingDeleteEvaluationId] = useState(null);
+  const [modalMessage, setModalMessage] = useState('');
 
   // ✅ Formulário de avaliação
   const [evaluationForm, setEvaluationForm] = useState({
@@ -137,7 +144,8 @@ export const InstructorDashboard = () => {
   // ✅ Submeter avaliação
   const handleSubmitEvaluation = async () => {
     if (!evaluationForm.courseLesson.trim()) {
-      alert('❌ Por favor, preencha o nome da aula!');
+      setModalMessage('Por favor, preencha o nome da aula!');
+      setShowErrorModal(true);
       return;
     }
 
@@ -166,26 +174,30 @@ export const InstructorDashboard = () => {
         throw new Error(`Erro ao ${editingEvaluation ? 'atualizar' : 'criar'} avaliação`);
       }
 
-      alert(`✅ Avaliação ${editingEvaluation ? 'atualizada' : 'criada'} com sucesso!`);
+      setModalMessage(`✅ Avaliação ${editingEvaluation ? 'atualizada' : 'criada'} com sucesso!`);
+      setShowSuccessModal(true);
       setShowEvaluationModal(false);
       fetchStudentEvaluations(selectedStudent._id);
     } catch (error) {
       console.error('❌ Erro ao salvar avaliação:', error);
-      alert('❌ Erro ao salvar avaliação!');
+      setModalMessage('Erro ao salvar avaliação!');
+      setShowErrorModal(true);
     }
   };
 
-  // ✅ Deletar avaliação
-  const handleDeleteEvaluation = async (evaluationId) => {
-    if (!window.confirm('Tem certeza que deseja deletar esta avaliação?')) {
-      return;
-    }
+  // ✅ Preparar para deletar avaliação
+  const handleDeleteEvaluation = (evaluationId) => {
+    setPendingDeleteEvaluationId(evaluationId);
+    setShowConfirmDeleteModal(true);
+  };
 
+  // ✅ Confirmar e executar deleção
+  const confirmDeleteEvaluation = async () => {
     try {
       const token = sessionStorage.getItem('conduzauto_instrutor_token');
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       
-      const response = await fetch(`${apiUrl}/instructor/evaluate/${evaluationId}`, {
+      const response = await fetch(`${apiUrl}/instructor/evaluate/${pendingDeleteEvaluationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -197,11 +209,16 @@ export const InstructorDashboard = () => {
         throw new Error('Erro ao deletar avaliação');
       }
 
-      alert('✅ Avaliação deletada com sucesso!');
+      setModalMessage('✅ Avaliação deletada com sucesso!');
+      setShowSuccessModal(true);
+      setShowConfirmDeleteModal(false);
+      setPendingDeleteEvaluationId(null);
       fetchStudentEvaluations(selectedStudent._id);
     } catch (error) {
       console.error('❌ Erro ao deletar avaliação:', error);
-      alert('❌ Erro ao deletar avaliação!');
+      setModalMessage('Erro ao deletar avaliação!');
+      setShowErrorModal(true);
+      setShowConfirmDeleteModal(false);
     }
   };
 
@@ -236,6 +253,9 @@ export const InstructorDashboard = () => {
   }`;
 
   const primaryButton = `bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all`;
+
+  const modalBackdrop = `fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4`;
+  const modalContent = `${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl max-w-md w-full p-6 shadow-2xl`;
 
   // ✅ Logout
   const handleLogout = () => {
@@ -679,6 +699,93 @@ export const InstructorDashboard = () => {
                   {editingEvaluation ? 'Atualizar' : 'Criar'} Avaliação
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ MODAL DE SUCESSO */}
+      {showSuccessModal && (
+        <div className={modalBackdrop} onClick={() => setShowSuccessModal(false)}>
+          <div className={modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                ✅ Sucesso
+              </h3>
+              <button onClick={() => setShowSuccessModal(false)} className={isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              {modalMessage}
+            </p>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className={`w-full ${primaryButton}`}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ MODAL DE ERRO */}
+      {showErrorModal && (
+        <div className={modalBackdrop} onClick={() => setShowErrorModal(false)}>
+          <div className={modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                ⚠️ Erro
+              </h3>
+              <button onClick={() => setShowErrorModal(false)} className={isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              {modalMessage}
+            </p>
+            <button
+              onClick={() => setShowErrorModal(false)}
+              className={`w-full ${primaryButton}`}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ MODAL DE CONFIRMAÇÃO DE DELEÇÃO */}
+      {showConfirmDeleteModal && (
+        <div className={modalBackdrop} onClick={() => setShowConfirmDeleteModal(false)}>
+          <div className={modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                🗑️ Deletar Avaliação?
+              </h3>
+              <button onClick={() => setShowConfirmDeleteModal(false)} className={isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Tem certeza que deseja deletar esta avaliação? Esta ação não pode ser desfeita!
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmDeleteModal(false)}
+                className={`flex-1 py-2 px-4 rounded-lg font-bold transition-colors ${
+                  isDark
+                    ? 'bg-gray-700 text-white hover:bg-gray-600'
+                    : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteEvaluation}
+                className={`flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all`}
+              >
+                Deletar
+              </button>
             </div>
           </div>
         </div>

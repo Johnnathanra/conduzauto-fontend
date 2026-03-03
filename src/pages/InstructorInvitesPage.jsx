@@ -10,6 +10,8 @@ export const InstructorInvitesPage = () => {
   const [copied, setCopied] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     loadInvites();
@@ -19,7 +21,11 @@ export const InstructorInvitesPage = () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem('conduzauto_instrutor_token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/invites/my-invites`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      
+      console.log('📋 [InstructorInvitesPage] Carregando convites...');
+      
+      const response = await fetch(`${apiUrl}/instructor/my-invitations`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -31,13 +37,14 @@ export const InstructorInvitesPage = () => {
       }
       
       const data = await response.json();
-      console.log('✅ [InstructorInvitesPage] Convites carregados:', data.invites);
+      console.log('✅ [InstructorInvitesPage] Convites carregados:', data.invitations);
       
-      // Filtrar apenas convites ativos
-      const activeInvites = (data.invites || []).filter(invite => invite.isActive);
-      setInvites(activeInvites);
+      setInvites(data.invitations || []);
     } catch (error) {
       console.error('❌ [InstructorInvitesPage] Erro ao carregar convites:', error);
+      setSuccessMessage('❌ Erro ao carregar convites');
+      setShowSuccessModal(true);
+      setInvites([]);
     } finally {
       setLoading(false);
     }
@@ -47,7 +54,11 @@ export const InstructorInvitesPage = () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem('conduzauto_instrutor_token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/invites/generate`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      
+      console.log('🎫 [InstructorInvitesPage] Gerando novo convite...');
+      
+      const response = await fetch(`${apiUrl}/instructor/generate-invitation`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -56,13 +67,13 @@ export const InstructorInvitesPage = () => {
       });
       
       const data = await response.json();
+      console.log('✅ [InstructorInvitesPage] Resposta:', data);
       
       if (data.success) {
-        console.log('✅ [InstructorInvitesPage] Convite gerado:', data);
-        // Recarregar convites automaticamente sem pop-up
-        loadInvites();
+        console.log('✅ [InstructorInvitesPage] Convite gerado com sucesso!');
+        await loadInvites();
       } else {
-        console.error('❌ Erro ao gerar convite:', data.message);
+        console.error('❌ Erro ao gerar convite:', data.error);
       }
     } catch (error) {
       console.error('❌ [InstructorInvitesPage] Erro ao gerar convite:', error);
@@ -95,7 +106,11 @@ export const InstructorInvitesPage = () => {
   const clearInvite = async (code) => {
     try {
       const token = sessionStorage.getItem('conduzauto_instrutor_token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/invites/revoke/${code}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      
+      console.log('🗑️ [InstructorInvitesPage] Revogando convite:', code);
+      
+      const response = await fetch(`${apiUrl}/instructor/revoke-invitation/${code}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -105,13 +120,19 @@ export const InstructorInvitesPage = () => {
       
       if (response.ok) {
         console.log('✅ [InstructorInvitesPage] Convite removido');
-        // Remover do estado sem pop-up
         setInvites(prevInvites => prevInvites.filter(invite => invite.code !== code));
+        setSuccessMessage('✅ Convite removido com sucesso!');
+        setShowSuccessModal(true);
       } else {
-        console.error('❌ Erro ao remover convite');
+        const errorData = await response.json();
+        console.error('❌ Erro ao remover convite:', errorData);
+        setSuccessMessage(`❌ Erro: ${errorData.error || 'Erro ao remover convite'}`);
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error('❌ [InstructorInvitesPage] Erro ao remover convite:', error);
+      setSuccessMessage('❌ Erro ao remover convite!');
+      setShowSuccessModal(true);
     }
   };
 
@@ -119,7 +140,11 @@ export const InstructorInvitesPage = () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem('conduzauto_instrutor_token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/invites/clear-all`, {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      
+      console.log('🗑️ [InstructorInvitesPage] Limpando todos os convites...');
+      
+      const response = await fetch(`${apiUrl}/instructor/clear-all-invitations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -129,13 +154,19 @@ export const InstructorInvitesPage = () => {
       
       if (response.ok) {
         console.log('✅ [InstructorInvitesPage] Todos os convites foram removidos');
-        // Limpar lista sem pop-up
         setInvites([]);
+        setSuccessMessage('✅ Todos os convites foram removidos!');
+        setShowSuccessModal(true);
       } else {
-        console.error('❌ Erro ao limpar convites');
+        const errorData = await response.json();
+        console.error('❌ Erro ao limpar convites:', errorData);
+        setSuccessMessage(`❌ Erro: ${errorData.error || 'Erro ao limpar convites'}`);
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error('❌ [InstructorInvitesPage] Erro ao limpar:', error);
+      setSuccessMessage('❌ Erro ao limpar convites!');
+      setShowSuccessModal(true);
     } finally {
       setLoading(false);
     }
@@ -147,7 +178,6 @@ export const InstructorInvitesPage = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  // Truncar URL
   const truncateUrl = (url, length = 35) => {
     if (url.length > length) {
       return url.substring(0, length) + '...';
@@ -159,6 +189,7 @@ export const InstructorInvitesPage = () => {
   const modalBackdrop = `fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50`;
   const modalContent = `${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl max-w-md w-full p-6 shadow-2xl`;
   const secondaryButton = `${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} font-bold py-2 px-4 rounded-lg transition-all`;
+  const primaryButton = `bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all`;
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -176,7 +207,6 @@ export const InstructorInvitesPage = () => {
           </div>
         </div>
 
-        {/* Header com Botões Sticky */}
         <div className={`sticky top-0 z-20 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b`}>
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row gap-4">
             <button
@@ -202,7 +232,6 @@ export const InstructorInvitesPage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Dica fixa */}
           <div className={`${isDark ? 'bg-orange-600' : 'bg-orange-600'} rounded-lg p-4 mb-8 sticky top-16 z-10`}>
             <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-white' : 'text-white'}`}>
               💡 <strong>Dica:</strong> Copie o link e compartilhe com seus alunos. Quando clicarem, serão vinculados automaticamente à sua conta.
@@ -222,40 +251,37 @@ export const InstructorInvitesPage = () => {
                   key={invite.code}
                   className={`${isDark ? 'bg-gray-800 border-gray-700 hover:border-orange-600' : 'bg-white border-gray-200 hover:border-orange-600'} border rounded-lg p-6 transition-all hover:shadow-lg flex flex-col h-full`}
                 >
-                  {/* Header Card */}
                   <div className="mb-4">
                     <p className={`text-xs font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       Link do Convite
                     </p>
                     <p className={`font-mono text-xs break-all ${isDark ? 'text-gray-300 bg-gray-700' : 'text-gray-700 bg-gray-100'} p-2 rounded`}>
-                      {truncateUrl(invite.link)}
+                      {truncateUrl(invite.invitationLink)}
                     </p>
                   </div>
 
-                  {/* Info Grid */}
                   <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-gray-600">
                     <div>
                       <p className={`text-xs font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                        🔗 Usos
+                        📅 Criado
                       </p>
-                      <p className={`text-2xl font-bold ${isDark ? 'text-orange-500' : 'text-orange-600'}`}>
-                        {invite.usageCount}
+                      <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {new Date(invite.createdAt).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     <div>
                       <p className={`text-xs font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                        📅 Expira
+                        ✅ Status
                       </p>
-                      <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {new Date(invite.expiresAt).toLocaleDateString('pt-BR')}
+                      <p className={`text-sm font-semibold ${invite.usedBy ? 'text-red-600' : 'text-green-600'}`}>
+                        {invite.usedBy ? 'Usado' : 'Ativo'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Botões */}
                   <div className="flex gap-2 mt-auto">
                     <button
-                      onClick={() => copyToClipboard(invite.link, index)}
+                      onClick={() => copyToClipboard(invite.invitationLink, index)}
                       className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg transition-all text-sm font-medium ${
                         copied === index
                           ? 'bg-green-600 text-white'
@@ -294,7 +320,7 @@ export const InstructorInvitesPage = () => {
         </div>
       </div>
 
-      {/* Confirm Modal (MANTIDO) */}
+      {/* ✅ CONFIRM MODAL - "Limpar Convite?" */}
       {showConfirmModal && (
         <div className={modalBackdrop} onClick={() => setShowConfirmModal(false)}>
           <div className={modalContent} onClick={(e) => e.stopPropagation()}>
@@ -324,6 +350,33 @@ export const InstructorInvitesPage = () => {
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all"
               >
                 ✅ Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ SUCCESS MODAL - MESMO LAYOUT DA CONFIRM MODAL */}
+      {showSuccessModal && (
+        <div className={modalBackdrop} onClick={() => setShowSuccessModal(false)}>
+          <div className={modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                ✅ Notificação
+              </h3>
+              <button onClick={() => setShowSuccessModal(false)} className={isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              {successMessage}
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className={`flex-1 ${primaryButton}`}
+              >
+                ✅ OK
               </button>
             </div>
           </div>
