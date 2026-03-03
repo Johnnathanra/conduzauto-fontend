@@ -82,6 +82,34 @@ export default function InviteLandingPage() {
     });
   };
 
+  // Componente Footer Reutilizável
+  const FooterComponent = () => (
+    <footer className="bg-gray-900 border-t border-gray-800 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Logo e Nome */}
+          <div className="flex items-center gap-3">
+            <img 
+              src="/ConduzAuto.png" 
+              alt="ConduzAuto Logo" 
+              className="w-10 h-10 rounded-lg shadow-lg"
+            />
+            <img 
+              src={isDark ? '/ConduzAuto white.svg' : '/ConduzAuto white.svg'} 
+              alt="ConduzAuto" 
+              className="h-6 object-contain"
+            />
+          </div>
+
+          {/* Copyright */}
+          <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-right">
+            © 2024 ConduzAuto. Todos os direitos reservados.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+
   if (loading) {
     return (
       <>
@@ -96,32 +124,7 @@ export default function InviteLandingPage() {
             </p>
           </div>
         </section>
-        
-        {/* Footer */}
-        <footer className="bg-gray-900 border-t border-gray-800 transition-colors duration-300">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-8 sm:py-12">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Logo e Nome */}
-              <div className="flex items-center gap-3">
-                <img 
-                  src="/ConduzAuto.png" 
-                  alt="ConduzAuto Logo" 
-                  className="w-10 h-10 rounded-lg shadow-lg"
-                />
-                <img 
-                  src={isDark ? '/ConduzAuto white.svg' : '/ConduzAuto gray.svg'} 
-                  alt="ConduzAuto" 
-                  className="h-6 object-contain"
-                />
-              </div>
-
-              {/* Copyright */}
-              <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-right">
-                © 2024 ConduzAuto. Todos os direitos reservados.
-              </p>
-            </div>
-          </div>
-        </footer>
+        <FooterComponent />
       </>
     );
   }
@@ -148,32 +151,7 @@ export default function InviteLandingPage() {
             </button>
           </div>
         </section>
-
-        {/* Footer */}
-        <footer className="bg-gray-900 border-t border-gray-800 transition-colors duration-300">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-8 sm:py-12">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Logo e Nome */}
-              <div className="flex items-center gap-3">
-                <img 
-                  src="/ConduzAuto.png" 
-                  alt="ConduzAuto Logo" 
-                  className="w-10 h-10 rounded-lg shadow-lg"
-                />
-                <img 
-                  src={isDark ? '/ConduzAuto white.svg' : '/ConduzAuto gray.svg'} 
-                  alt="ConduzAuto" 
-                  className="h-6 object-contain"
-                />
-              </div>
-
-              {/* Copyright */}
-              <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-right">
-                © 2024 ConduzAuto. Todos os direitos reservados.
-              </p>
-            </div>
-          </div>
-        </footer>
+        <FooterComponent />
       </>
     );
   }
@@ -265,32 +243,7 @@ export default function InviteLandingPage() {
             </div>
           </div>
         </section>
-
-        {/* Footer */}
-        <footer className="bg-gray-900 border-t border-gray-800 transition-colors duration-300">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-8 sm:py-12">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Logo e Nome */}
-              <div className="flex items-center gap-3">
-                <img 
-                  src="/ConduzAuto.png" 
-                  alt="ConduzAuto Logo" 
-                  className="w-9 h-9 rounded-lg shadow-lg"
-                />
-                <img 
-                  src={isDark ? '/ConduzAuto white.svg' : '/ConduzAuto white.svg'} 
-                  alt="ConduzAuto" 
-                  className="h-4 object-contain"
-                />
-              </div>
-
-              {/* Copyright */}
-              <p className="text-gray-400 text-xs sm:text-sm text-center sm:text-right">
-                © 2024 ConduzAuto. Todos os direitos reservados.
-              </p>
-            </div>
-          </div>
-        </footer>
+        <FooterComponent />
       </>
     );
   }
